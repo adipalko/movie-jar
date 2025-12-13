@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import type { MovieWithUser } from '../types';
+import { getMovieTrailerUrl } from '../lib/movieApi';
 
 interface MovieDetailModalProps {
   movie: MovieWithUser;
@@ -8,6 +10,25 @@ interface MovieDetailModalProps {
 }
 
 export function MovieDetailModal({ movie, onClose, onMarkWatched, onRemove }: MovieDetailModalProps) {
+  const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
+  const [loadingTrailer, setLoadingTrailer] = useState(false);
+
+  useEffect(() => {
+    // Fetch trailer URL if we have a TMDB ID
+    if (movie.api_source === 'tmdb' && movie.api_id) {
+      setLoadingTrailer(true);
+      getMovieTrailerUrl(movie.api_id)
+        .then(url => {
+          setTrailerUrl(url);
+        })
+        .catch(err => {
+          console.error('Error fetching trailer:', err);
+        })
+        .finally(() => {
+          setLoadingTrailer(false);
+        });
+    }
+  }, [movie.api_source, movie.api_id]);
   return (
     <div
       className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
@@ -70,6 +91,27 @@ export function MovieDetailModal({ movie, onClose, onMarkWatched, onRemove }: Mo
                 <p className="text-sm text-slate-300 leading-relaxed">{movie.plot}</p>
               </div>
             )}
+
+            {/* Trailer Link */}
+            {loadingTrailer ? (
+              <div className="mb-4">
+                <div className="text-sm text-slate-400">Loading trailer...</div>
+              </div>
+            ) : trailerUrl ? (
+              <div className="mb-4">
+                <a
+                  href={trailerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
+                  </svg>
+                  Watch Trailer
+                </a>
+              </div>
+            ) : null}
 
             {/* Personal Note */}
             {movie.personal_note && (

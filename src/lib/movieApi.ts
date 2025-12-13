@@ -48,6 +48,21 @@ export interface TMDBMovieDetails {
   imdb_id: string | null;
 }
 
+export interface TMDBVideo {
+  id: string;
+  key: string;
+  name: string;
+  site: string;
+  size: number;
+  type: string;
+  official: boolean;
+}
+
+export interface TMDBVideosResponse {
+  id: number;
+  results: TMDBVideo[];
+}
+
 export interface TMDBMovieSearchResult {
   id: number;
   title: string;
@@ -168,6 +183,75 @@ function parseTMDBResponse(data: TMDBMovieDetails): Partial<Movie> {
     api_source: 'tmdb',
     api_id: data.id.toString(),
   };
+}
+
+/**
+ * Get movie videos (trailers, teasers, etc.) by TMDB ID
+ */
+export async function getMovieVideos(tmdbId: string): Promise<TMDBVideo[]> {
+  if (!TMDB_API_KEY || TMDB_API_KEY === 'your_tmdb_api_key_here') {
+    console.warn('TMDB API key not configured');
+    return [];
+  }
+
+  try {
+    const url = `${TMDB_BASE_URL}/movie/${tmdbId}/videos?api_key=${TMDB_API_KEY}&language=en-US`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      await response.json().catch(() => ({})); // Consume response body
+      return [];
+    }
+
+    const data: TMDBVideosResponse = await response.json();
+
+    if (!data.results || !Array.isArray(data.results)) {
+      return [];
+    }
+
+    return data.results;
+  } catch (error) {
+    console.error('Error fetching movie videos from TMDB:', error);
+    return [];
+  }
+}
+
+/**
+ * Get trailer URL for a movie (prefers official trailers, falls back to first trailer)
+ */
+export async function getMovieTrailerUrl(tmdbId: string): Promise<string | null> {
+  const videos = await getMovieVideos(tmdbId);
+  
+  if (videos.length === 0) {
+    return null;
+  }
+
+  // Prefer official trailers on YouTube
+  const officialTrailer = videos.find(
+    v => v.type === 'Trailer' && v.site === 'YouTube' && v.official
+  );
+  
+  if (officialTrailer) {
+    return `https://www.youtube.com/watch?v=${officialTrailer.key}`;
+  }
+
+  // Fall back to any trailer on YouTube
+  const anyTrailer = videos.find(
+    v => v.type === 'Trailer' && v.site === 'YouTube'
+  );
+  
+  if (anyTrailer) {
+    return `https://www.youtube.com/watch?v=${anyTrailer.key}`;
+  }
+
+  // Fall back to any YouTube video
+  const anyYouTube = videos.find(v => v.site === 'YouTube');
+  
+  if (anyYouTube) {
+    return `https://www.youtube.com/watch?v=${anyYouTube.key}`;
+  }
+
+  return null;
 }
 
 /**
