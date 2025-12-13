@@ -1,28 +1,68 @@
 /**
  * Movie API Integration
  * 
- * This module handles fetching movie metadata from OMDb API.
+ * This module handles fetching movie metadata from TMDB (The Movie Database) API.
  * The API key is stored in environment variables and should never be exposed in the frontend.
  * In a production app, this would be done on a backend server.
  * 
- * For this demo, we're using OMDb's API directly from the frontend.
+ * For this demo, we're using TMDB's API directly from the frontend.
  * Note: In production, you should proxy this through your backend to keep API keys secure.
  * 
- * Get a free API key at: http://www.omdbapi.com/apikey.aspx
+ * Get a free API key at: https://www.themoviedb.org/settings/api
  */
 
-import type { Movie, OMDbMovieResponse, OMDbSearchResponse } from '../types';
+import type { Movie } from '../types';
 
-const OMDB_API_KEY = import.meta.env.VITE_OMDB_API_KEY;
-const OMDB_BASE_URL = 'https://www.omdbapi.com';
+const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+
+export interface TMDBMovieResult {
+  id: number;
+  title: string;
+  release_date: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  overview: string;
+  vote_average: number;
+  genre_ids: number[];
+}
+
+export interface TMDBSearchResponse {
+  page: number;
+  results: TMDBMovieResult[];
+  total_pages: number;
+  total_results: number;
+}
+
+export interface TMDBMovieDetails {
+  id: number;
+  title: string;
+  release_date: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  overview: string;
+  vote_average: number;
+  runtime: number | null;
+  genres: Array<{ id: number; name: string }>;
+  imdb_id: string | null;
+}
+
+export interface TMDBMovieSearchResult {
+  id: number;
+  title: string;
+  year: string;
+  poster_url: string | null;
+  imdbID: string;
+}
 
 /**
  * Search for movies by title (returns multiple results)
  */
-export async function searchMovies(query: string): Promise<OMDbSearchResponse[]> {
-  if (!OMDB_API_KEY || OMDB_API_KEY === 'your_omdb_api_key_here') {
-    console.warn('OMDb API key not configured');
-    throw new Error('OMDb API key is not configured. Please add VITE_OMDB_API_KEY to your .env file.');
+export async function searchMovies(query: string): Promise<TMDBMovieSearchResult[]> {
+  if (!TMDB_API_KEY || TMDB_API_KEY === 'your_tmdb_api_key_here') {
+    console.warn('TMDB API key not configured');
+    throw new Error('TMDB API key is not configured. Please add VITE_TMDB_API_KEY to your .env file.');
   }
 
   try {
@@ -32,138 +72,110 @@ export async function searchMovies(query: string): Promise<OMDbSearchResponse[]>
       return [];
     }
 
-    // OMDb API search (returns multiple results)
-    // Properly encode the query to handle multi-word searches
+    // TMDB API search (returns multiple results)
     const encodedQuery = encodeURIComponent(normalizedQuery);
-    const searchUrl = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&s=${encodedQuery}&type=movie`;
+    const searchUrl = `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodedQuery}&language=en-US`;
     
     const searchResponse = await fetch(searchUrl);
     
     if (!searchResponse.ok) {
       const errorData = await searchResponse.json().catch(() => ({}));
       if (searchResponse.status === 401) {
-        throw new Error('OMDb API key is invalid or not activated. Please check your API key and make sure you activated it via email.');
+        throw new Error('TMDB API key is invalid. Please check your API key.');
       }
-      throw new Error(`OMDb API error: ${searchResponse.status} - ${errorData.Error || 'Unknown error'}`);
+      throw new Error(`TMDB API error: ${searchResponse.status} - ${errorData.status_message || 'Unknown error'}`);
     }
 
-    const data = await searchResponse.json();
+    const data: TMDBSearchResponse = await searchResponse.json();
 
-    // Check if movies were found
-    if (data.Response === 'False') {
-      // If it's an error message, check what kind
-      if (data.Error) {
-        const errorLower = data.Error.toLowerCase();
-        
-        // For "Movie not found!" with multi-word queries, try searching with just the first word
-        // This helps when searching "erin bro" doesn't match "Erin Brockovich"
-        if ((errorLower.includes('not found') || errorLower.includes('movie not found')) && normalizedQuery.includes(' ')) {
-          const firstWord = normalizedQuery.split(' ')[0];
-          if (firstWord && firstWord.length >= 3) {
-            // Try searching with just the first word as a fallback
-            try {
-              const fallbackResults = await searchMovies(firstWord);
-              // Filter results to include movies that match any word from the original query
-              const queryWords = normalizedQuery.toLowerCase().split(' ');
-              return fallbackResults.filter(movie => {
-                const titleLower = movie.Title.toLowerCase();
-                return queryWords.some(word => titleLower.includes(word));
-              });
-            } catch {
-              // If fallback also fails, return empty
-              return [];
-            }
-          }
-          return [];
-        }
-        
-        // For other errors (API issues, etc.), throw them
-        throw new Error(`OMDb API: ${data.Error}`);
-      }
+    if (!data.results || !Array.isArray(data.results)) {
       return [];
     }
 
-    if (!data.Search || !Array.isArray(data.Search)) {
-      return [];
-    }
-
-    return data.Search;
+    // Convert TMDB results to our format
+    return data.results.map(movie => ({
+      id: movie.id,
+      title: movie.title,
+      year: movie.release_date ? movie.release_date.split('-')[0] : 'Unknown',
+      poster_url: movie.poster_path ? `${TMDB_IMAGE_BASE_URL}${movie.poster_path}` : null,
+      imdbID: movie.id.toString(), // Use TMDB ID as identifier
+    }));
   } catch (error: any) {
-    console.error('Error searching movies from OMDb:', error);
+    console.error('Error searching movies from TMDB:', error);
     // Re-throw so the UI can handle it
     throw error;
   }
 }
 
 /**
- * Get detailed movie information by IMDb ID
+ * Get detailed movie information by TMDB ID
  */
-export async function getMovieByImdbId(imdbId: string): Promise<Partial<Movie> | null> {
-  if (!OMDB_API_KEY || OMDB_API_KEY === 'your_omdb_api_key_here') {
-    console.warn('OMDb API key not configured');
+export async function getMovieByTmdbId(tmdbId: string): Promise<Partial<Movie> | null> {
+  if (!TMDB_API_KEY || TMDB_API_KEY === 'your_tmdb_api_key_here') {
+    console.warn('TMDB API key not configured');
     return null;
   }
 
   try {
-    const url = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&i=${encodeURIComponent(imdbId)}`;
+    const url = `${TMDB_BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=en-US`;
     const response = await fetch(url);
     
     if (!response.ok) {
       await response.json().catch(() => ({})); // Consume response body
       if (response.status === 401) {
-        throw new Error('OMDb API key is invalid or not activated.');
+        throw new Error('TMDB API key is invalid or not activated.');
       }
-      throw new Error(`OMDb API error: ${response.status}`);
+      throw new Error(`TMDB API error: ${response.status}`);
     }
 
-    const data: OMDbMovieResponse = await response.json();
+    const data: TMDBMovieDetails = await response.json();
 
-    if (data.Response === 'False' || !data.Title) {
+    if (!data.title) {
       return null;
     }
 
-    return parseOMDbResponse(data);
+    return parseTMDBResponse(data);
   } catch (error) {
-    console.error('Error fetching movie from OMDb:', error);
+    console.error('Error fetching movie from TMDB:', error);
     return null;
   }
 }
 
 /**
- * Parse OMDb response into Movie format
+ * Parse TMDB response into Movie format
  */
-function parseOMDbResponse(data: OMDbMovieResponse): Partial<Movie> {
-  const runtimeMinutes = data.Runtime && data.Runtime !== 'N/A'
-    ? parseInt(data.Runtime.replace(/\s*min\s*/i, ''), 10)
+function parseTMDBResponse(data: TMDBMovieDetails): Partial<Movie> {
+  const year = data.release_date && data.release_date !== ''
+    ? parseInt(data.release_date.split('-')[0], 10)
     : null;
 
-  const year = data.Year && data.Year !== 'N/A'
-    ? parseInt(data.Year.split('–')[0], 10)
+  const rating = data.vote_average && data.vote_average > 0
+    ? data.vote_average.toFixed(1)
     : null;
 
-  const rating = data.imdbRating && data.imdbRating !== 'N/A'
-    ? parseFloat(data.imdbRating).toFixed(1)
+  const genres = data.genres && data.genres.length > 0
+    ? data.genres.map(g => g.name).join(', ')
     : null;
 
   return {
-    title: data.Title,
+    title: data.title,
     year,
-    poster_url: data.Poster && data.Poster !== 'N/A' ? data.Poster : null,
+    poster_url: data.poster_path ? `${TMDB_IMAGE_BASE_URL}${data.poster_path}` : null,
     rating,
-    runtime_minutes: runtimeMinutes,
-    genres: data.Genre && data.Genre !== 'N/A' ? data.Genre : null,
-    plot: data.Plot && data.Plot !== 'N/A' ? data.Plot : null,
-    api_source: 'omdb',
-    api_id: data.imdbID || null,
+    runtime_minutes: data.runtime || null,
+    genres,
+    plot: data.overview && data.overview !== '' ? data.overview : null,
+    api_source: 'tmdb',
+    api_id: data.id.toString(),
   };
 }
 
 /**
- * Search for a movie by title using OMDb API (legacy - returns first match)
+ * Search for a movie by title using TMDB API (legacy - returns first match)
  */
 export async function searchMovie(title: string): Promise<Partial<Movie> | null> {
-  if (!OMDB_API_KEY) {
-    console.warn('OMDb API key not configured');
+  if (!TMDB_API_KEY) {
+    console.warn('TMDB API key not configured');
     return null;
   }
 
@@ -177,12 +189,12 @@ export async function searchMovie(title: string): Promise<Partial<Movie> | null>
     // Get detailed info for first result
     const firstResult = results[0];
     if (firstResult.imdbID) {
-      return await getMovieByImdbId(firstResult.imdbID);
+      return await getMovieByTmdbId(firstResult.imdbID);
     }
 
     return null;
   } catch (error) {
-    console.error('Error fetching movie from OMDb:', error);
+    console.error('Error fetching movie from TMDB:', error);
     return null;
   }
 }

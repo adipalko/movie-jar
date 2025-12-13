@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { addMovie } from '../lib/movies';
 import { useHousehold } from '../contexts/HouseholdContext';
-import { searchMovies, getMovieByImdbId } from '../lib/movieApi';
-import type { OMDbSearchResponse } from '../types';
+import { searchMovies, getMovieByTmdbId, type TMDBMovieSearchResult } from '../lib/movieApi';
 
 interface AddMovieFormProps {
   onSuccess: () => void;
@@ -12,8 +11,8 @@ interface AddMovieFormProps {
 export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
   const { activeHousehold } = useHousehold();
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<OMDbSearchResponse[]>([]);
-  const [selectedMovie, setSelectedMovie] = useState<OMDbSearchResponse | null>(null);
+  const [searchResults, setSearchResults] = useState<TMDBMovieSearchResult[]>([]);
+  const [selectedMovie, setSelectedMovie] = useState<TMDBMovieSearchResult | null>(null);
   const [personalNote, setPersonalNote] = useState('');
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -36,7 +35,7 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
         setSearchResults(results);
       } catch (err: any) {
         console.error('Search error:', err);
-        setError(err.message || 'Failed to search movies. Please check your OMDb API key configuration.');
+        setError(err.message || 'Failed to search movies. Please check your TMDB API key configuration.');
         setSearchResults([]);
       } finally {
         setSearching(false);
@@ -46,9 +45,9 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
-  async function handleSelectMovie(movie: OMDbSearchResponse) {
+  async function handleSelectMovie(movie: TMDBMovieSearchResult) {
     setSelectedMovie(movie);
-    setSearchQuery(movie.Title);
+    setSearchQuery(movie.title);
     setSearchResults([]);
   }
 
@@ -61,15 +60,15 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
     setLoading(true);
 
     try {
-      // Get full movie details using IMDb ID
-      const movieDetails = await getMovieByImdbId(selectedMovie.imdbID);
+      // Get full movie details using TMDB ID
+      const movieDetails = await getMovieByTmdbId(selectedMovie.imdbID);
       
       if (!movieDetails) {
         throw new Error('Failed to fetch movie details');
       }
       
       // Pass the movie metadata directly to avoid re-searching
-      await addMovie(activeHousehold.id, movieDetails.title || selectedMovie.Title, personalNote.trim() || undefined, movieDetails);
+      await addMovie(activeHousehold.id, movieDetails.title || selectedMovie.title, personalNote.trim() || undefined, movieDetails);
       setSelectedMovie(null);
       setSearchQuery('');
       setPersonalNote('');
@@ -138,10 +137,10 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
                   onClick={() => handleSelectMovie(movie)}
                   className="w-full flex items-center gap-3 p-3 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors text-left"
                 >
-                  {movie.Poster && movie.Poster !== 'N/A' ? (
+                  {movie.poster_url ? (
                     <img
-                      src={movie.Poster}
-                      alt={movie.Title}
+                      src={movie.poster_url}
+                      alt={movie.title}
                       className="w-16 h-24 object-cover rounded"
                     />
                   ) : (
@@ -150,8 +149,8 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-white truncate">{movie.Title}</div>
-                    <div className="text-sm text-slate-400">{movie.Year}</div>
+                    <div className="font-semibold text-white truncate">{movie.title}</div>
+                    <div className="text-sm text-slate-400">{movie.year}</div>
                   </div>
                 </button>
               ))}
@@ -166,14 +165,14 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
                 <div className="mt-2 text-xs">
                   Get a free API key at{' '}
                   <a 
-                    href="http://www.omdbapi.com/apikey.aspx" 
+                    href="https://www.themoviedb.org/settings/api" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="underline text-blue-400 hover:text-blue-300"
                   >
-                    omdbapi.com
+                    themoviedb.org
                   </a>
-                  {' '}and add it to your .env file as VITE_OMDB_API_KEY
+                  {' '}and add it to your .env file as VITE_TMDB_API_KEY
                 </div>
               )}
             </div>
@@ -200,10 +199,10 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Selected Movie Preview */}
           <div className="flex gap-4 p-4 bg-slate-700 rounded-lg">
-            {selectedMovie.Poster && selectedMovie.Poster !== 'N/A' ? (
+            {selectedMovie.poster_url ? (
               <img
-                src={selectedMovie.Poster}
-                alt={selectedMovie.Title}
+                src={selectedMovie.poster_url}
+                alt={selectedMovie.title}
                 className="w-20 h-28 object-cover rounded"
               />
             ) : (
@@ -212,8 +211,8 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
               </div>
             )}
             <div className="flex-1">
-              <div className="font-semibold text-white text-lg">{selectedMovie.Title}</div>
-              <div className="text-sm text-slate-400">{selectedMovie.Year}</div>
+              <div className="font-semibold text-white text-lg">{selectedMovie.title}</div>
+              <div className="text-sm text-slate-400">{selectedMovie.year}</div>
               <button
                 type="button"
                 onClick={() => {

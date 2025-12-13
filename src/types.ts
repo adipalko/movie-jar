@@ -31,7 +31,7 @@ export interface Movie {
   status: MovieStatus;
   personal_note: string | null;
   // API metadata
-  api_source: string | null; // 'omdb' or 'tmdb'
+  api_source: string | null; // 'tmdb'
   api_id: string | null;
   year: number | null;
   poster_url: string | null;
@@ -47,44 +47,13 @@ export interface MovieWithUser extends Movie {
   added_by_user?: AppUser;
 }
 
-// API response types
-export interface OMDbMovieResponse {
-  Title: string;
-  Year: string;
-  Rated: string;
-  Released: string;
-  Runtime: string;
-  Genre: string;
-  Director: string;
-  Writer: string;
-  Actors: string;
-  Plot: string;
-  Language: string;
-  Country: string;
-  Awards: string;
-  Poster: string;
-  Ratings: Array<{
-    Source: string;
-    Value: string;
-  }>;
-  Metascore: string;
-  imdbRating: string;
-  imdbVotes: string;
+// API response types (TMDB)
+export interface TMDBMovieSearchResult {
+  id: number;
+  title: string;
+  year: string;
+  poster_url: string | null;
   imdbID: string;
-  Type: string;
-  DVD: string;
-  BoxOffice: string;
-  Production: string;
-  Website: string;
-  Response: string; // "True" or "False"
-}
-
-export interface OMDbSearchResponse {
-  Title: string;
-  Year: string;
-  imdbID: string;
-  Type: string;
-  Poster: string;
 }
 
 export interface HouseholdInvitation {

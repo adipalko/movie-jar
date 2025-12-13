@@ -6,7 +6,7 @@ A shared household movie list app where you can add movies, randomly pick one fo
 
 - **Authentication**: Sign up/login with email and password via Supabase Auth
 - **Households**: Create and manage shared households (e.g., "Adi & Jonathan", "Family")
-- **Movie Lists**: Add movies to your household with automatic metadata from OMDb
+- **Movie Lists**: Add movies to your household with automatic metadata from TMDB
 - **Random Picker**: Pick a random unwatched movie for movie night
 - **Status Tracking**: Mark movies as watched or remove them from the list
 - **Persistent Storage**: All data stored in Supabase (PostgreSQL)
@@ -16,14 +16,14 @@ A shared household movie list app where you can add movies, randomly pick one fo
 - **Frontend**: React + TypeScript + Vite
 - **Styling**: Tailwind CSS
 - **Backend**: Supabase (PostgreSQL + Auth)
-- **Movie API**: OMDb (Open Movie Database)
+- **Movie API**: TMDB (The Movie Database)
 - **Routing**: React Router
 
 ## Prerequisites
 
 - Node.js 18+ and npm/yarn
 - A Supabase account and project
-- An OMDb API key (free at [omdbapi.com](http://www.omdbapi.com/apikey.aspx))
+- A TMDB API key (free at [themoviedb.org](https://www.themoviedb.org/settings/api))
 
 ## Setup Instructions
 
@@ -40,7 +40,7 @@ Create a `.env` file in the root directory:
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_OMDB_API_KEY=your_omdb_api_key
+VITE_TMDB_API_KEY=your_tmdb_api_key
 ```
 
 You can find your Supabase credentials in your Supabase project settings under "API".
