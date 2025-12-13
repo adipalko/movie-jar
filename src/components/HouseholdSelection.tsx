@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { createHousehold } from '../lib/households';
 import { useHousehold } from '../contexts/HouseholdContext';
-import { useAuth } from '../contexts/AuthContext';
 
 export function HouseholdSelection() {
   const { households, activeHousehold, setActiveHousehold, refreshHouseholds, loading } = useHousehold();
-  const { user } = useAuth();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [householdName, setHouseholdName] = useState('');
   const [creating, setCreating] = useState(false);

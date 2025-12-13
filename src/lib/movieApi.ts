@@ -75,7 +75,7 @@ export async function getMovieByImdbId(imdbId: string): Promise<Partial<Movie> |
     const response = await fetch(url);
     
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      await response.json().catch(() => ({})); // Consume response body
       if (response.status === 401) {
         throw new Error('OMDb API key is invalid or not activated.');
       }

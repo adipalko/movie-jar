@@ -6,12 +6,10 @@ import { MovieDetailModal } from './MovieDetailModal';
 import { AddMovieForm } from './AddMovieForm';
 import { HouseholdSettings } from './HouseholdSettings';
 import { signOut } from '../lib/auth';
-import { useAuth } from '../contexts/AuthContext';
 import type { MovieWithUser } from '../types';
 
 export function HomeScreen() {
   const { activeHousehold, setActiveHousehold, households } = useHousehold();
-  const { user } = useAuth();
   const [featuredMovie, setFeaturedMovie] = useState<MovieWithUser | null>(null);
   const [unwatchedMovies, setUnwatchedMovies] = useState<MovieWithUser[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
