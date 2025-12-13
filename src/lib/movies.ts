@@ -100,6 +100,7 @@ export async function getHouseholdMovies(
       added_by_user:app_users!movies_added_by_user_id_fkey (
         id,
         display_name,
+        email,
         created_at
       )
     `)
