@@ -142,7 +142,7 @@ export function HouseholdSettings({ onClose }: HouseholdSettingsProps) {
       <div className="mb-6">
         <label className="block text-sm font-medium text-slate-300 mb-2">Household Name</label>
         {editingName ? (
-          <form onSubmit={handleSaveName} className="flex gap-2">
+          <form onSubmit={handleSaveName} className="flex flex-col sm:flex-row gap-2">
             <input
               type="text"
               value={householdName}
@@ -150,23 +150,25 @@ export function HouseholdSettings({ onClose }: HouseholdSettingsProps) {
               className="flex-1 px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-            <button
-              type="submit"
-              disabled={savingName}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
-            >
-              {savingName ? 'Saving...' : 'Save'}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setEditingName(false);
-                setHouseholdName(activeHousehold.name);
-              }}
-              className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={savingName}
+                className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+              >
+                {savingName ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingName(false);
+                  setHouseholdName(activeHousehold.name);
+                }}
+                className="flex-1 sm:flex-none px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </form>
         ) : (
           <div className="flex items-center gap-2">
