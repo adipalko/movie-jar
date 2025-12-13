@@ -26,8 +26,14 @@ export async function searchMovies(query: string): Promise<OMDbSearchResponse[]>
   }
 
   try {
+    // Trim and normalize the query
+    const normalizedQuery = query.trim();
+    if (!normalizedQuery) {
+      return [];
+    }
+
     // OMDb API search (returns multiple results)
-    const searchUrl = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(query)}&type=movie`;
+    const searchUrl = `${OMDB_BASE_URL}/?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(normalizedQuery)}&type=movie`;
     const searchResponse = await fetch(searchUrl);
     
     if (!searchResponse.ok) {
@@ -42,14 +48,20 @@ export async function searchMovies(query: string): Promise<OMDbSearchResponse[]>
 
     // Check if movies were found
     if (data.Response === 'False') {
-      // If it's an error message, throw it
+      // If it's an error message, check if it's "Movie not found!" - this is common for partial searches
       if (data.Error) {
+        // For "Movie not found!" errors, return empty array instead of throwing
+        // This allows users to continue typing without seeing an error
+        if (data.Error.toLowerCase().includes('not found') || data.Error.toLowerCase().includes('movie not found')) {
+          return [];
+        }
+        // For other errors, throw them
         throw new Error(`OMDb API: ${data.Error}`);
       }
       return [];
     }
 
-    if (!data.Search) {
+    if (!data.Search || !Array.isArray(data.Search)) {
       return [];
     }
 
