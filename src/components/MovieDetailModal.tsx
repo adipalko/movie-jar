@@ -9,9 +9,53 @@ interface MovieDetailModalProps {
   onRemove?: () => void;
 }
 
+function TrailerModal({ trailerUrl, onClose }: { trailerUrl: string; onClose: () => void }) {
+  // Extract YouTube video ID from URL
+  const getYouTubeVideoId = (url: string): string | null => {
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+    return match ? match[1] : null;
+  };
+
+  const videoId = trailerUrl ? getYouTubeVideoId(trailerUrl) : null;
+
+  if (!videoId) {
+    return null;
+  }
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-slate-900 rounded-lg max-w-4xl w-full aspect-video relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute -top-10 right-0 text-white hover:text-slate-300 transition-colors"
+          aria-label="Close trailer"
+        >
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <iframe
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+          title="Movie Trailer"
+          className="w-full h-full rounded-lg"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    </div>
+  );
+}
+
 export function MovieDetailModal({ movie, onClose, onMarkWatched, onRemove }: MovieDetailModalProps) {
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const [loadingTrailer, setLoadingTrailer] = useState(false);
+  const [showTrailerModal, setShowTrailerModal] = useState(false);
 
   useEffect(() => {
     // Fetch trailer URL if we have a TMDB ID
@@ -92,24 +136,22 @@ export function MovieDetailModal({ movie, onClose, onMarkWatched, onRemove }: Mo
               </div>
             )}
 
-            {/* Trailer Link */}
+            {/* Trailer Button */}
             {loadingTrailer ? (
               <div className="mb-4">
                 <div className="text-sm text-slate-400">Loading trailer...</div>
               </div>
             ) : trailerUrl ? (
               <div className="mb-4">
-                <a
-                  href={trailerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+                <button
+                  onClick={() => setShowTrailerModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
                   </svg>
                   Watch Trailer
-                </a>
+                </button>
               </div>
             ) : null}
 
@@ -159,6 +201,14 @@ export function MovieDetailModal({ movie, onClose, onMarkWatched, onRemove }: Mo
           </div>
         </div>
       </div>
+      
+      {/* Trailer Modal */}
+      {showTrailerModal && trailerUrl && (
+        <TrailerModal
+          trailerUrl={trailerUrl}
+          onClose={() => setShowTrailerModal(false)}
+        />
+      )}
     </div>
   );
 }
