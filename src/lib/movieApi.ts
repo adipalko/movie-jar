@@ -51,14 +51,32 @@ export async function searchMovies(query: string): Promise<OMDbSearchResponse[]>
 
     // Check if movies were found
     if (data.Response === 'False') {
-      // If it's an error message, only show errors for actual problems
-      // "Movie not found!" is normal when searching - return empty array
+      // If it's an error message, check what kind
       if (data.Error) {
         const errorLower = data.Error.toLowerCase();
-        // For "Movie not found!" - this is expected for some queries, return empty
-        if (errorLower.includes('not found') || errorLower.includes('movie not found')) {
+        
+        // For "Movie not found!" with multi-word queries, try searching with just the first word
+        // This helps when searching "erin bro" doesn't match "Erin Brockovich"
+        if ((errorLower.includes('not found') || errorLower.includes('movie not found')) && normalizedQuery.includes(' ')) {
+          const firstWord = normalizedQuery.split(' ')[0];
+          if (firstWord && firstWord.length >= 3) {
+            // Try searching with just the first word as a fallback
+            try {
+              const fallbackResults = await searchMovies(firstWord);
+              // Filter results to include movies that match any word from the original query
+              const queryWords = normalizedQuery.toLowerCase().split(' ');
+              return fallbackResults.filter(movie => {
+                const titleLower = movie.Title.toLowerCase();
+                return queryWords.some(word => titleLower.includes(word));
+              });
+            } catch {
+              // If fallback also fails, return empty
+              return [];
+            }
+          }
           return [];
         }
+        
         // For other errors (API issues, etc.), throw them
         throw new Error(`OMDb API: ${data.Error}`);
       }
