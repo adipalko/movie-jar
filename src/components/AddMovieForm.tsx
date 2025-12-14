@@ -3,6 +3,7 @@ import { addMovie } from '../lib/movies';
 import { useHousehold } from '../contexts/HouseholdContext';
 import { useContentType } from '../contexts/ContentTypeContext';
 import { searchMovies, searchTVShows, getMovieByTmdbId, getTVShowByTmdbId, type TMDBMovieSearchResult } from '../lib/movieApi';
+import { analytics } from '../lib/analytics';
 
 interface AddMovieFormProps {
   onSuccess: () => void;
@@ -76,6 +77,7 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
       
       // Pass the movie metadata directly to avoid re-searching
       await addMovie(activeHousehold.id, movieDetails.title || selectedMovie.title, personalNote.trim() || undefined, movieDetails, contentType);
+      analytics.trackMovieAdded(contentType);
       setSelectedMovie(null);
       setSearchQuery('');
       setPersonalNote('');

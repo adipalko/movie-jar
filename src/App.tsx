@@ -10,6 +10,7 @@ import { HomeScreen } from './components/HomeScreen';
 import { WatchedMoviesScreen } from './components/WatchedMoviesScreen';
 import { InviteAcceptance } from './components/InviteAcceptance';
 import { Layout } from './components/Layout';
+import { AnalyticsTracker } from './components/AnalyticsTracker';
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, appUser, loading } = useAuth();
@@ -95,6 +96,7 @@ function AppRoutes() {
 function App() {
   return (
     <Router>
+      <AnalyticsTracker />
       <AuthProvider>
         <HouseholdProvider>
           <ContentTypeProvider>

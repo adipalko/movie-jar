@@ -7,6 +7,7 @@ import { MovieDetailModal } from './MovieDetailModal';
 import { AddMovieForm } from './AddMovieForm';
 import { HouseholdSettings } from './HouseholdSettings';
 import { signOut } from '../lib/auth';
+import { analytics } from '../lib/analytics';
 import type { MovieWithUser } from '../types';
 
 type TVTab = 'unwatched' | 'watching' | 'watched';
@@ -82,6 +83,7 @@ export function HomeScreen() {
       const movie = await getRandomUnwatchedMovie(activeHousehold.id, contentType);
       if (movie) {
         setFeaturedMovie(movie);
+        analytics.trackPickRandom(contentType);
       } else {
         const contentTypeLabel = contentType === 'movie' ? 'movies' : 'TV shows';
         alert(`No unwatched ${contentTypeLabel} in this household. Add some first!`);
@@ -101,6 +103,7 @@ export function HomeScreen() {
       if (featuredMovie?.id === movieId) {
         setFeaturedMovie(null);
       }
+      analytics.trackMovieWatched(contentType);
       await loadMovies();
     } catch (error) {
       console.error('Error marking movie as watched:', error);
@@ -114,6 +117,7 @@ export function HomeScreen() {
       if (featuredMovie?.id === movieId) {
         setFeaturedMovie(null);
       }
+      analytics.trackMovieWatching();
       await loadMovies();
     } catch (error) {
       console.error('Error marking TV show as watching:', error);
@@ -131,6 +135,7 @@ export function HomeScreen() {
       if (featuredMovie?.id === movieId) {
         setFeaturedMovie(null);
       }
+      analytics.trackMovieRemoved(contentType);
       await loadMovies();
     } catch (error) {
       console.error('Error removing movie:', error);
@@ -175,7 +180,10 @@ export function HomeScreen() {
             {/* Toggle Switch */}
             <div className="flex items-center bg-slate-700 rounded-lg p-1">
               <button
-                onClick={() => setContentType('movie')}
+                onClick={() => {
+                  setContentType('movie');
+                  analytics.trackContentTypeSwitch('movie');
+                }}
                 className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                   contentType === 'movie'
                     ? 'bg-blue-600 text-white shadow-sm'
@@ -185,7 +193,10 @@ export function HomeScreen() {
                 Movies
               </button>
               <button
-                onClick={() => setContentType('tv')}
+                onClick={() => {
+                  setContentType('tv');
+                  analytics.trackContentTypeSwitch('tv');
+                }}
                 className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                   contentType === 'tv'
                     ? 'bg-blue-600 text-white shadow-sm'
@@ -315,7 +326,10 @@ export function HomeScreen() {
             <div className="mb-4">
               <div className="flex gap-2 border-b border-slate-700">
                 <button
-                  onClick={() => setActiveTab('unwatched')}
+                  onClick={() => {
+                    setActiveTab('unwatched');
+                    analytics.trackTabSwitch('unwatched');
+                  }}
                   className={`px-4 py-2 font-medium transition-colors ${
                     activeTab === 'unwatched'
                       ? 'text-blue-400 border-b-2 border-blue-400'
@@ -325,7 +339,10 @@ export function HomeScreen() {
                   In Jar ({unwatchedMovies.length})
                 </button>
                 <button
-                  onClick={() => setActiveTab('watching')}
+                  onClick={() => {
+                    setActiveTab('watching');
+                    analytics.trackTabSwitch('watching');
+                  }}
                   className={`px-4 py-2 font-medium transition-colors ${
                     activeTab === 'watching'
                       ? 'text-purple-400 border-b-2 border-purple-400'
@@ -335,7 +352,10 @@ export function HomeScreen() {
                   Watching Now ({watchingMovies.length})
                 </button>
                 <button
-                  onClick={() => setActiveTab('watched')}
+                  onClick={() => {
+                    setActiveTab('watched');
+                    analytics.trackTabSwitch('watched');
+                  }}
                   className={`px-4 py-2 font-medium transition-colors ${
                     activeTab === 'watched'
                       ? 'text-green-400 border-b-2 border-green-400'

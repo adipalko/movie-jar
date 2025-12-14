@@ -7,8 +7,11 @@ A shared household movie list app where you can add movies, randomly pick one fo
 - **Authentication**: Sign up/login with email and password via Supabase Auth
 - **Households**: Create and manage shared households (e.g., "Adi & Jonathan", "Family")
 - **Movie Lists**: Add movies to your household with automatic metadata from TMDB
-- **Random Picker**: Pick a random unwatched movie for movie night
-- **Status Tracking**: Mark movies as watched or remove them from the list
+- **TV Shows**: Toggle between Movie Jar and TV Jar to manage both movies and TV shows
+- **Watching Status**: Track TV shows you're currently watching
+- **Random Picker**: Pick a random unwatched movie/TV show for movie night
+- **Status Tracking**: Mark movies/TV shows as watched or remove them from the list
+- **Analytics**: Optional Google Analytics integration for usage tracking
 - **Persistent Storage**: All data stored in Supabase (PostgreSQL)
 
 ## Tech Stack
@@ -41,9 +44,16 @@ Create a `.env` file in the root directory:
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_TMDB_API_KEY=your_tmdb_api_key
+VITE_GA_MEASUREMENT_ID=your_google_analytics_measurement_id
 ```
 
 You can find your Supabase credentials in your Supabase project settings under "API".
+
+**Google Analytics (Optional):**
+1. Create a Google Analytics 4 property at [analytics.google.com](https://analytics.google.com)
+2. Get your Measurement ID (format: `G-XXXXXXXXXX`)
+3. Add it to your `.env` file as `VITE_GA_MEASUREMENT_ID`
+4. If not provided, the app will work fine without analytics (you'll see a console warning)
 
 ### 3. Set Up Supabase Database
 
