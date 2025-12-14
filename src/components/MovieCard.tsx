@@ -144,59 +144,59 @@ export function MovieCard({ movie, onMarkWatched, onMarkWatching, onRemove, onVi
                 {movie.genres && (
                   <p className="text-xs text-slate-400 line-clamp-1">{movie.genres}</p>
                 )}
-                {movie.plot && (
-                  <p className="text-xs text-slate-300 mt-2 line-clamp-3">{movie.plot}</p>
-                )}
               </div>
             </div>
             
             {/* Action buttons at bottom */}
-            <div className="flex gap-1 flex-wrap mt-2">
+            <div className="flex flex-col gap-2 mt-3">
               {movie.status === 'unwatched' && onMarkWatching && movie.content_type === 'tv' && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onMarkWatching();
                   }}
-                  className="flex-1 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-colors flex items-center justify-center gap-2"
+                  className="w-full px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded transition-colors flex items-center justify-center gap-2.5"
+                  title="Start Watching"
                 >
-                  <svg className="w-4 h-4 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <svg className="w-5 h-5 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="text-xs text-slate-300 font-medium">Start</span>
+                  <span className="text-sm text-slate-300 font-medium">Start</span>
                 </button>
               )}
-              {movie.status === 'unwatched' && onMarkWatched && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onMarkWatched();
-                  }}
-                  className="flex-1 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-colors flex items-center justify-center gap-2"
-                >
-                  <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-xs text-slate-300 font-medium">Watched</span>
-                </button>
-              )}
-              {onRemove && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (confirm('Are you sure you want to remove this from the list?')) {
-                      onRemove();
-                    }
-                  }}
-                  className="flex-1 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-colors flex items-center justify-center gap-2"
-                >
-                  <svg className="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  <span className="text-xs text-slate-300 font-medium">Remove</span>
-                </button>
-              )}
+              <div className="flex gap-2">
+                {movie.status === 'unwatched' && onMarkWatched && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMarkWatched();
+                    }}
+                    className="flex-1 px-2 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-colors flex items-center justify-center"
+                    title="Mark as Watched"
+                  >
+                    <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </button>
+                )}
+                {onRemove && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm('Are you sure you want to remove this from the list?')) {
+                        onRemove();
+                      }
+                    }}
+                    className="flex-1 px-2 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-colors flex items-center justify-center"
+                    title="Remove from List"
+                  >
+                    <svg className="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
