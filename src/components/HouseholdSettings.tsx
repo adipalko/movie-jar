@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useHousehold } from '../contexts/HouseholdContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getHouseholdMembers, addHouseholdMemberByEmail, updateHouseholdName, removeHouseholdMember } from '../lib/households';
+import { signOut } from '../lib/auth';
 import type { HouseholdMember, AppUser } from '../types';
 
 interface HouseholdSettingsProps {
@@ -292,6 +293,23 @@ export function HouseholdSettings({ onClose }: HouseholdSettingsProps) {
             ))}
           </div>
         )}
+
+        {/* Sign Out Section */}
+        <div className="border-t border-slate-700 pt-6 mt-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Account</h3>
+          <button
+            onClick={async () => {
+              await signOut();
+              onClose();
+            }}
+            className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Sign Out
+          </button>
+        </div>
       </div>
     </div>
   );

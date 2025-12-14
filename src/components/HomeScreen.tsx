@@ -6,7 +6,6 @@ import { MovieCard } from './MovieCard';
 import { MovieDetailModal } from './MovieDetailModal';
 import { AddMovieForm } from './AddMovieForm';
 import { HouseholdSettings } from './HouseholdSettings';
-import { signOut } from '../lib/auth';
 import { analytics } from '../lib/analytics';
 import type { MovieWithUser } from '../types';
 
@@ -169,54 +168,61 @@ export function HomeScreen() {
     <div className="min-h-screen px-4 py-6 pb-20">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-start justify-between mb-6 gap-2 sm:gap-4">
-          <div className="flex-shrink-0 min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 whitespace-nowrap">
+        <div className="mb-4 sm:mb-6">
+          {/* Top row: Title, toggle, and settings */}
+          <div className="flex items-center justify-between mb-2 gap-2">
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-white whitespace-nowrap">
               {contentType === 'movie' ? '🎬 Movie Jar' : '📺 TV Jar'}
             </h1>
-            <p className="text-slate-400 truncate text-sm sm:text-base">{activeHousehold.name}</p>
-          </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-            {/* Toggle Switch */}
-            <div className="flex items-center bg-slate-700 rounded-lg p-0.5 sm:p-1">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              {/* Toggle Switch */}
+              <div className="flex items-center bg-slate-700 rounded-lg p-0.5 sm:p-1">
+                <button
+                  onClick={() => {
+                    setContentType('movie');
+                    analytics.trackContentTypeSwitch('movie');
+                  }}
+                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${
+                    contentType === 'movie'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Movies
+                </button>
+                <button
+                  onClick={() => {
+                    setContentType('tv');
+                    analytics.trackContentTypeSwitch('tv');
+                  }}
+                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${
+                    contentType === 'tv'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  TV Shows
+                </button>
+              </div>
               <button
-                onClick={() => {
-                  setContentType('movie');
-                  analytics.trackContentTypeSwitch('movie');
-                }}
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${
-                  contentType === 'movie'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-300 hover:text-white'
-                }`}
+                onClick={() => setShowSettings(true)}
+                className="p-1.5 sm:p-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                title="Household Settings"
+                aria-label="Household Settings"
               >
-                Movies
-              </button>
-              <button
-                onClick={() => {
-                  setContentType('tv');
-                  analytics.trackContentTypeSwitch('tv');
-                }}
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${
-                  contentType === 'tv'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                TV Shows
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
               </button>
             </div>
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-              title="Household Settings"
-              aria-label="Household Settings"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
+          </div>
+          
+          {/* Bottom row: Household name and selector */}
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-slate-400 text-xs sm:text-sm truncate flex-shrink min-w-0">
+              {activeHousehold.name}
+            </p>
             {households.length > 1 && (
               <select
                 value={activeHousehold.id}
@@ -224,26 +230,13 @@ export function HomeScreen() {
                   const household = households.find(h => h.id === e.target.value);
                   if (household) setActiveHousehold(household);
                 }}
-                className="px-2 sm:px-3 py-2 bg-slate-700 text-white text-xs sm:text-sm rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-2 sm:px-3 py-1.5 sm:py-2 bg-slate-700 text-white text-xs sm:text-sm rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-shrink-0"
               >
                 {households.map(h => (
                   <option key={h.id} value={h.id}>{h.name}</option>
                 ))}
               </select>
             )}
-            <button
-              onClick={async () => {
-                await signOut();
-                setActiveHousehold(null);
-              }}
-              className="p-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-              title="Sign Out"
-              aria-label="Sign Out"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-            </button>
           </div>
         </div>
 
