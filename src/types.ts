@@ -21,7 +21,7 @@ export interface HouseholdMember {
   role: 'admin' | 'member';
 }
 
-export type MovieStatus = 'unwatched' | 'watched';
+export type MovieStatus = 'unwatched' | 'watching' | 'watched';
 
 export interface Movie {
   id: string;
@@ -30,6 +30,7 @@ export interface Movie {
   title: string;
   status: MovieStatus;
   personal_note: string | null;
+  content_type: 'movie' | 'tv'; // 'movie' or 'tv'
   // API metadata
   api_source: string | null; // 'tmdb'
   api_id: string | null;

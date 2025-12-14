@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS movies (
   household_id UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
   added_by_user_id UUID NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
-  status TEXT DEFAULT 'unwatched' CHECK (status IN ('unwatched', 'watched')),
+  status TEXT DEFAULT 'unwatched' CHECK (status IN ('unwatched', 'watching', 'watched')),
+  content_type TEXT DEFAULT 'movie' CHECK (content_type IN ('movie', 'tv')),
   personal_note TEXT,
   -- API metadata
   api_source TEXT,
@@ -57,6 +58,7 @@ CREATE INDEX IF NOT EXISTS idx_household_members_user_id ON household_members(us
 CREATE INDEX IF NOT EXISTS idx_household_members_household_id ON household_members(household_id);
 CREATE INDEX IF NOT EXISTS idx_movies_household_id ON movies(household_id);
 CREATE INDEX IF NOT EXISTS idx_movies_status ON movies(status);
+CREATE INDEX IF NOT EXISTS idx_movies_content_type ON movies(content_type);
 CREATE INDEX IF NOT EXISTS idx_movies_added_by_user_id ON movies(added_by_user_id);
 
 -- Enable Row Level Security (RLS)
@@ -66,20 +68,24 @@ ALTER TABLE household_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE movies ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for app_users
+DROP POLICY IF EXISTS "Users can view their own profile" ON app_users;
 CREATE POLICY "Users can view their own profile"
   ON app_users FOR SELECT
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can update their own profile" ON app_users;
 CREATE POLICY "Users can update their own profile"
   ON app_users FOR UPDATE
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can insert their own profile" ON app_users;
 CREATE POLICY "Users can insert their own profile"
   ON app_users FOR INSERT
   WITH CHECK (auth.uid() = id);
 
 -- RLS Policies for households
 -- SIMPLIFIED: Only check created_by, never query household_members (avoids recursion)
+DROP POLICY IF EXISTS "Users can view households they belong to" ON households;
 CREATE POLICY "Users can view households they belong to"
   ON households FOR SELECT
   USING (
@@ -87,6 +93,7 @@ CREATE POLICY "Users can view households they belong to"
     created_by = auth.uid()
   );
 
+DROP POLICY IF EXISTS "Users can create households" ON households;
 CREATE POLICY "Users can create households"
   ON households FOR INSERT
   WITH CHECK (auth.uid() = created_by);
@@ -95,6 +102,7 @@ CREATE POLICY "Users can create households"
 -- ULTRA SIMPLE: Use EXISTS with direct household check (avoids recursion)
 
 -- SELECT Policy: Check if you're the creator using EXISTS
+DROP POLICY IF EXISTS "Users can view members of their households" ON household_members;
 CREATE POLICY "Users can view members of their households"
   ON household_members FOR SELECT
   USING (
@@ -106,6 +114,7 @@ CREATE POLICY "Users can view members of their households"
   );
 
 -- INSERT Policy: Check if you're the creator using EXISTS
+DROP POLICY IF EXISTS "Users can add members to their households" ON household_members;
 CREATE POLICY "Users can add members to their households"
   ON household_members FOR INSERT
   WITH CHECK (
@@ -117,6 +126,7 @@ CREATE POLICY "Users can add members to their households"
   );
 
 -- RLS Policies for movies
+DROP POLICY IF EXISTS "Users can view movies in their households" ON movies;
 CREATE POLICY "Users can view movies in their households"
   ON movies FOR SELECT
   USING (
@@ -125,6 +135,7 @@ CREATE POLICY "Users can view movies in their households"
     )
   );
 
+DROP POLICY IF EXISTS "Users can add movies to their households" ON movies;
 CREATE POLICY "Users can add movies to their households"
   ON movies FOR INSERT
   WITH CHECK (
@@ -134,6 +145,7 @@ CREATE POLICY "Users can add movies to their households"
     AND auth.uid() = added_by_user_id
   );
 
+DROP POLICY IF EXISTS "Users can update movies in their households" ON movies;
 CREATE POLICY "Users can update movies in their households"
   ON movies FOR UPDATE
   USING (
@@ -142,6 +154,7 @@ CREATE POLICY "Users can update movies in their households"
     )
   );
 
+DROP POLICY IF EXISTS "Users can delete movies in their households" ON movies;
 CREATE POLICY "Users can delete movies in their households"
   ON movies FOR DELETE
   USING (

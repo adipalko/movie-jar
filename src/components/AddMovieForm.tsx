@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { addMovie } from '../lib/movies';
 import { useHousehold } from '../contexts/HouseholdContext';
-import { searchMovies, getMovieByTmdbId, type TMDBMovieSearchResult } from '../lib/movieApi';
+import { useContentType } from '../contexts/ContentTypeContext';
+import { searchMovies, searchTVShows, getMovieByTmdbId, getTVShowByTmdbId, type TMDBMovieSearchResult } from '../lib/movieApi';
 
 interface AddMovieFormProps {
   onSuccess: () => void;
@@ -10,6 +11,7 @@ interface AddMovieFormProps {
 
 export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
   const { activeHousehold } = useHousehold();
+  const { contentType } = useContentType();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<TMDBMovieSearchResult[]>([]);
   const [selectedMovie, setSelectedMovie] = useState<TMDBMovieSearchResult | null>(null);
@@ -31,11 +33,14 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
       setSearching(true);
       setError(null);
       try {
-        const results = await searchMovies(searchQuery.trim());
+        const results = contentType === 'tv' 
+          ? await searchTVShows(searchQuery.trim())
+          : await searchMovies(searchQuery.trim());
         setSearchResults(results);
       } catch (err: any) {
         console.error('Search error:', err);
-        setError(err.message || 'Failed to search movies. Please check your TMDB API key configuration.');
+        const contentTypeLabel = contentType === 'movie' ? 'movies' : 'TV shows';
+        setError(err.message || `Failed to search ${contentTypeLabel}. Please check your TMDB API key configuration.`);
         setSearchResults([]);
       } finally {
         setSearching(false);
@@ -43,7 +48,7 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
     }, 500); // Wait 500ms after user stops typing
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+  }, [searchQuery, contentType]);
 
   async function handleSelectMovie(movie: TMDBMovieSearchResult) {
     setSelectedMovie(movie);
@@ -60,28 +65,32 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
     setLoading(true);
 
     try {
-      // Get full movie details using TMDB ID
-      const movieDetails = await getMovieByTmdbId(selectedMovie.imdbID);
+      // Get full movie/TV show details using TMDB ID
+      const movieDetails = contentType === 'tv'
+        ? await getTVShowByTmdbId(selectedMovie.imdbID)
+        : await getMovieByTmdbId(selectedMovie.imdbID);
       
       if (!movieDetails) {
-        throw new Error('Failed to fetch movie details');
+        throw new Error(`Failed to fetch ${contentType === 'movie' ? 'movie' : 'TV show'} details`);
       }
       
       // Pass the movie metadata directly to avoid re-searching
-      await addMovie(activeHousehold.id, movieDetails.title || selectedMovie.title, personalNote.trim() || undefined, movieDetails);
+      await addMovie(activeHousehold.id, movieDetails.title || selectedMovie.title, personalNote.trim() || undefined, movieDetails, contentType);
       setSelectedMovie(null);
       setSearchQuery('');
       setPersonalNote('');
       onSuccess();
     } catch (err: any) {
       if (err.message?.includes('metadata')) {
-        setWarning('Movie added, but metadata could not be loaded from API.');
+        const contentTypeLabel = contentType === 'movie' ? 'Movie' : 'TV show';
+        setWarning(`${contentTypeLabel} added, but metadata could not be loaded from API.`);
         setSelectedMovie(null);
         setSearchQuery('');
         setPersonalNote('');
         onSuccess();
       } else {
-        setError(err.message || 'Failed to add movie');
+        const contentTypeLabel = contentType === 'movie' ? 'movie' : 'TV show';
+        setError(err.message || `Failed to add ${contentTypeLabel}`);
       }
     } finally {
       setLoading(false);
@@ -102,16 +111,18 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
     return null;
   }
 
+  const contentTypeLabel = contentType === 'movie' ? 'Movie' : 'TV Show';
+
   return (
     <div className="bg-slate-800 rounded-lg p-6">
-      <h2 className="text-xl font-semibold text-white mb-4">Add Movie</h2>
+      <h2 className="text-xl font-semibold text-white mb-4">Add {contentTypeLabel}</h2>
       
       {!selectedMovie ? (
         // Search phase
         <div className="space-y-4">
           <div>
             <label htmlFor="search" className="block text-sm font-medium text-slate-300 mb-1">
-              Search for a Movie <span className="text-red-400">*</span>
+              Search for a {contentTypeLabel} <span className="text-red-400">*</span>
             </label>
             <input
               id="search"
@@ -119,7 +130,7 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Type movie title to search..."
+              placeholder={`Type ${contentType === 'movie' ? 'movie' : 'TV show'} title to search...`}
               autoFocus
             />
             {searching && (
@@ -180,7 +191,7 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
 
           {searchQuery && !searching && !error && searchResults.length === 0 && (
             <div className="text-center py-8 text-slate-400">
-              No movies found. Try a different search term.
+              No {contentType === 'movie' ? 'movies' : 'TV shows'} found. Try a different search term.
             </div>
           )}
 
@@ -259,7 +270,7 @@ export function AddMovieForm({ onSuccess, onCancel }: AddMovieFormProps) {
               disabled={loading}
               className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Adding...' : 'Add Movie'}
+              {loading ? 'Adding...' : `Add ${contentTypeLabel}`}
             </button>
             <button
               type="button"

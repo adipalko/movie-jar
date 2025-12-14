@@ -2,6 +2,7 @@ import { type ReactNode } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { HouseholdProvider, useHousehold } from './contexts/HouseholdContext';
+import { ContentTypeProvider } from './contexts/ContentTypeContext';
 import { AuthScreen } from './components/AuthScreen';
 import { ProfileSetup } from './components/ProfileSetup';
 import { HouseholdSelection } from './components/HouseholdSelection';
@@ -96,7 +97,9 @@ function App() {
     <Router>
       <AuthProvider>
         <HouseholdProvider>
-          <AppRoutes />
+          <ContentTypeProvider>
+            <AppRoutes />
+          </ContentTypeProvider>
         </HouseholdProvider>
       </AuthProvider>
     </Router>

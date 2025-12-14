@@ -13,7 +13,7 @@ import { searchMovie } from './movieApi';
 import type { Movie, MovieWithUser, MovieStatus } from '../types';
 
 /**
- * Add a movie to a household
+ * Add a movie or TV show to a household
  * This function:
  * 1. Uses provided movie metadata (or searches if not provided)
  * 2. Inserts the movie into the database
@@ -23,7 +23,8 @@ export async function addMovie(
   householdId: string,
   title: string,
   personalNote?: string,
-  movieMetadata?: Partial<Movie> | null
+  movieMetadata?: Partial<Movie> | null,
+  contentType: 'movie' | 'tv' = 'movie'
 ): Promise<Movie> {
   const { data: { user } } = await supabase.auth.getUser();
   
@@ -46,7 +47,7 @@ export async function addMovie(
   let finalMetadata: Partial<Movie> | null = movieMetadata || null;
   if (!finalMetadata) {
     try {
-      finalMetadata = await searchMovie(title);
+      finalMetadata = await searchMovie(title, contentType);
     } catch (error) {
       console.warn('Failed to fetch movie metadata:', error);
       // Continue without metadata
@@ -60,6 +61,7 @@ export async function addMovie(
     title: finalMetadata?.title || title, // Use API title if available, otherwise use provided title
     status: 'unwatched',
     personal_note: personalNote || null,
+    content_type: finalMetadata?.content_type || contentType,
     // API metadata (if available)
     api_source: finalMetadata?.api_source || null,
     api_id: finalMetadata?.api_id || null,
@@ -87,11 +89,12 @@ export async function addMovie(
 }
 
 /**
- * Get all movies for a household, optionally filtered by status
+ * Get all movies/TV shows for a household, optionally filtered by status and content type
  */
 export async function getHouseholdMovies(
   householdId: string,
-  status?: MovieStatus
+  status?: MovieStatus,
+  contentType?: 'movie' | 'tv'
 ): Promise<MovieWithUser[]> {
   let query = supabase
     .from('movies')
@@ -111,6 +114,10 @@ export async function getHouseholdMovies(
     query = query.eq('status', status);
   }
 
+  if (contentType) {
+    query = query.eq('content_type', contentType);
+  }
+
   const { data, error } = await query;
 
   if (error) {
@@ -122,10 +129,10 @@ export async function getHouseholdMovies(
 }
 
 /**
- * Get a random unwatched movie from a household
+ * Get a random unwatched movie/TV show from a household
  */
-export async function getRandomUnwatchedMovie(householdId: string): Promise<MovieWithUser | null> {
-  const movies = await getHouseholdMovies(householdId, 'unwatched');
+export async function getRandomUnwatchedMovie(householdId: string, contentType: 'movie' | 'tv' = 'movie'): Promise<MovieWithUser | null> {
+  const movies = await getHouseholdMovies(householdId, 'unwatched', contentType);
   
   if (movies.length === 0) {
     return null;

@@ -28,9 +28,27 @@ export interface TMDBMovieResult {
   genre_ids: number[];
 }
 
+export interface TMDBTVResult {
+  id: number;
+  name: string;
+  first_air_date: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  overview: string;
+  vote_average: number;
+  genre_ids: number[];
+}
+
 export interface TMDBSearchResponse {
   page: number;
   results: TMDBMovieResult[];
+  total_pages: number;
+  total_results: number;
+}
+
+export interface TMDBSearchTVResponse {
+  page: number;
+  results: TMDBTVResult[];
   total_pages: number;
   total_results: number;
 }
@@ -46,6 +64,20 @@ export interface TMDBMovieDetails {
   runtime: number | null;
   genres: Array<{ id: number; name: string }>;
   imdb_id: string | null;
+}
+
+export interface TMDBTVDetails {
+  id: number;
+  name: string;
+  first_air_date: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  overview: string;
+  vote_average: number;
+  episode_run_time: number[] | null;
+  genres: Array<{ id: number; name: string }>;
+  number_of_seasons: number | null;
+  number_of_episodes: number | null;
 }
 
 export interface TMDBVideo {
@@ -69,6 +101,57 @@ export interface TMDBMovieSearchResult {
   year: string;
   poster_url: string | null;
   imdbID: string;
+}
+
+/**
+ * Search for TV shows by title (returns multiple results)
+ */
+export async function searchTVShows(query: string): Promise<TMDBMovieSearchResult[]> {
+  if (!TMDB_API_KEY || TMDB_API_KEY === 'your_tmdb_api_key_here') {
+    console.warn('TMDB API key not configured');
+    throw new Error('TMDB API key is not configured. Please add VITE_TMDB_API_KEY to your .env file.');
+  }
+
+  try {
+    // Trim and normalize the query
+    const normalizedQuery = query.trim();
+    if (!normalizedQuery) {
+      return [];
+    }
+
+    // TMDB API search for TV shows (returns multiple results)
+    const encodedQuery = encodeURIComponent(normalizedQuery);
+    const searchUrl = `${TMDB_BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodedQuery}&language=en-US`;
+    
+    const searchResponse = await fetch(searchUrl);
+    
+    if (!searchResponse.ok) {
+      const errorData = await searchResponse.json().catch(() => ({}));
+      if (searchResponse.status === 401) {
+        throw new Error('TMDB API key is invalid. Please check your API key.');
+      }
+      throw new Error(`TMDB API error: ${searchResponse.status} - ${errorData.status_message || 'Unknown error'}`);
+    }
+
+    const data: TMDBSearchTVResponse = await searchResponse.json();
+
+    if (!data.results || !Array.isArray(data.results)) {
+      return [];
+    }
+
+    // Convert TMDB results to our format
+    return data.results.map(tv => ({
+      id: tv.id,
+      title: tv.name,
+      year: tv.first_air_date ? tv.first_air_date.split('-')[0] : 'Unknown',
+      poster_url: tv.poster_path ? `${TMDB_IMAGE_BASE_URL}${tv.poster_path}` : null,
+      imdbID: tv.id.toString(), // Use TMDB ID as identifier
+    }));
+  } catch (error: any) {
+    console.error('Error searching TV shows from TMDB:', error);
+    // Re-throw so the UI can handle it
+    throw error;
+  }
 }
 
 /**
@@ -123,6 +206,40 @@ export async function searchMovies(query: string): Promise<TMDBMovieSearchResult
 }
 
 /**
+ * Get detailed TV show information by TMDB ID
+ */
+export async function getTVShowByTmdbId(tmdbId: string): Promise<Partial<Movie> | null> {
+  if (!TMDB_API_KEY || TMDB_API_KEY === 'your_tmdb_api_key_here') {
+    console.warn('TMDB API key not configured');
+    return null;
+  }
+
+  try {
+    const url = `${TMDB_BASE_URL}/tv/${tmdbId}?api_key=${TMDB_API_KEY}&language=en-US`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      await response.json().catch(() => ({})); // Consume response body
+      if (response.status === 401) {
+        throw new Error('TMDB API key is invalid or not activated.');
+      }
+      throw new Error(`TMDB API error: ${response.status}`);
+    }
+
+    const data: TMDBTVDetails = await response.json();
+
+    if (!data.name) {
+      return null;
+    }
+
+    return parseTMDBTVResponse(data);
+  } catch (error) {
+    console.error('Error fetching TV show from TMDB:', error);
+    return null;
+  }
+}
+
+/**
  * Get detailed movie information by TMDB ID
  */
 export async function getMovieByTmdbId(tmdbId: string): Promise<Partial<Movie> | null> {
@@ -157,6 +274,41 @@ export async function getMovieByTmdbId(tmdbId: string): Promise<Partial<Movie> |
 }
 
 /**
+ * Parse TMDB TV response into Movie format
+ */
+function parseTMDBTVResponse(data: TMDBTVDetails): Partial<Movie> {
+  const year = data.first_air_date && data.first_air_date !== ''
+    ? parseInt(data.first_air_date.split('-')[0], 10)
+    : null;
+
+  const rating = data.vote_average && data.vote_average > 0
+    ? data.vote_average.toFixed(1)
+    : null;
+
+  const genres = data.genres && data.genres.length > 0
+    ? data.genres.map(g => g.name).join(', ')
+    : null;
+
+  // For TV shows, runtime is typically per episode
+  const runtime = data.episode_run_time && data.episode_run_time.length > 0
+    ? data.episode_run_time[0]
+    : null;
+
+  return {
+    title: data.name,
+    year,
+    poster_url: data.poster_path ? `${TMDB_IMAGE_BASE_URL}${data.poster_path}` : null,
+    rating,
+    runtime_minutes: runtime,
+    genres,
+    plot: data.overview && data.overview !== '' ? data.overview : null,
+    api_source: 'tmdb',
+    api_id: data.id.toString(),
+    content_type: 'tv',
+  };
+}
+
+/**
  * Parse TMDB response into Movie format
  */
 function parseTMDBResponse(data: TMDBMovieDetails): Partial<Movie> {
@@ -182,7 +334,39 @@ function parseTMDBResponse(data: TMDBMovieDetails): Partial<Movie> {
     plot: data.overview && data.overview !== '' ? data.overview : null,
     api_source: 'tmdb',
     api_id: data.id.toString(),
+    content_type: 'movie',
   };
+}
+
+/**
+ * Get TV show videos (trailers, teasers, etc.) by TMDB ID
+ */
+export async function getTVShowVideos(tmdbId: string): Promise<TMDBVideo[]> {
+  if (!TMDB_API_KEY || TMDB_API_KEY === 'your_tmdb_api_key_here') {
+    console.warn('TMDB API key not configured');
+    return [];
+  }
+
+  try {
+    const url = `${TMDB_BASE_URL}/tv/${tmdbId}/videos?api_key=${TMDB_API_KEY}&language=en-US`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      await response.json().catch(() => ({})); // Consume response body
+      return [];
+    }
+
+    const data: TMDBVideosResponse = await response.json();
+
+    if (!data.results || !Array.isArray(data.results)) {
+      return [];
+    }
+
+    return data.results;
+  } catch (error) {
+    console.error('Error fetching TV show videos from TMDB:', error);
+    return [];
+  }
 }
 
 /**
@@ -217,9 +401,51 @@ export async function getMovieVideos(tmdbId: string): Promise<TMDBVideo[]> {
 }
 
 /**
- * Get trailer URL for a movie (prefers official trailers, falls back to first trailer)
+ * Get trailer URL for a TV show (prefers official trailers, falls back to first trailer)
  */
-export async function getMovieTrailerUrl(tmdbId: string): Promise<string | null> {
+export async function getTVShowTrailerUrl(tmdbId: string): Promise<string | null> {
+  const videos = await getTVShowVideos(tmdbId);
+  
+  if (videos.length === 0) {
+    return null;
+  }
+
+  // Prefer official trailers on YouTube
+  const officialTrailer = videos.find(
+    v => v.type === 'Trailer' && v.site === 'YouTube' && v.official
+  );
+  
+  if (officialTrailer) {
+    return `https://www.youtube.com/watch?v=${officialTrailer.key}`;
+  }
+
+  // Fall back to any trailer on YouTube
+  const anyTrailer = videos.find(
+    v => v.type === 'Trailer' && v.site === 'YouTube'
+  );
+  
+  if (anyTrailer) {
+    return `https://www.youtube.com/watch?v=${anyTrailer.key}`;
+  }
+
+  // Fall back to any YouTube video
+  const anyYouTube = videos.find(v => v.site === 'YouTube');
+  
+  if (anyYouTube) {
+    return `https://www.youtube.com/watch?v=${anyYouTube.key}`;
+  }
+
+  return null;
+}
+
+/**
+ * Get trailer URL for a movie or TV show (prefers official trailers, falls back to first trailer)
+ */
+export async function getMovieTrailerUrl(tmdbId: string, contentType: 'movie' | 'tv' = 'movie'): Promise<string | null> {
+  if (contentType === 'tv') {
+    return getTVShowTrailerUrl(tmdbId);
+  }
+  
   const videos = await getMovieVideos(tmdbId);
   
   if (videos.length === 0) {
@@ -255,9 +481,9 @@ export async function getMovieTrailerUrl(tmdbId: string): Promise<string | null>
 }
 
 /**
- * Search for a movie by title using TMDB API (legacy - returns first match)
+ * Search for a movie or TV show by title using TMDB API (legacy - returns first match)
  */
-export async function searchMovie(title: string): Promise<Partial<Movie> | null> {
+export async function searchMovie(title: string, contentType: 'movie' | 'tv' = 'movie'): Promise<Partial<Movie> | null> {
   if (!TMDB_API_KEY) {
     console.warn('TMDB API key not configured');
     return null;
@@ -265,7 +491,9 @@ export async function searchMovie(title: string): Promise<Partial<Movie> | null>
 
   try {
     // Use search to get first result
-    const results = await searchMovies(title);
+    const results = contentType === 'tv' 
+      ? await searchTVShows(title)
+      : await searchMovies(title);
     if (results.length === 0) {
       return null;
     }
@@ -273,7 +501,9 @@ export async function searchMovie(title: string): Promise<Partial<Movie> | null>
     // Get detailed info for first result
     const firstResult = results[0];
     if (firstResult.imdbID) {
-      return await getMovieByTmdbId(firstResult.imdbID);
+      return contentType === 'tv'
+        ? await getTVShowByTmdbId(firstResult.imdbID)
+        : await getMovieByTmdbId(firstResult.imdbID);
     }
 
     return null;

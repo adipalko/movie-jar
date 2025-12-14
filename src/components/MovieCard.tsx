@@ -3,12 +3,13 @@ import type { MovieWithUser } from '../types';
 interface MovieCardProps {
   movie: MovieWithUser;
   onMarkWatched?: () => void;
+  onMarkWatching?: () => void;
   onRemove?: () => void;
   onViewDetails?: () => void;
   featured?: boolean;
 }
 
-export function MovieCard({ movie, onMarkWatched, onRemove, onViewDetails, featured = false }: MovieCardProps) {
+export function MovieCard({ movie, onMarkWatched, onMarkWatching, onRemove, onViewDetails, featured = false }: MovieCardProps) {
   if (featured) {
     // Featured movie - show full details
     return (
@@ -59,6 +60,14 @@ export function MovieCard({ movie, onMarkWatched, onRemove, onViewDetails, featu
             </div>
 
             <div className="flex gap-2 flex-wrap">
+              {movie.status === 'unwatched' && onMarkWatching && movie.content_type === 'tv' && (
+                <button
+                  onClick={onMarkWatching}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  Start Watching
+                </button>
+              )}
               {movie.status === 'unwatched' && onMarkWatched && (
                 <button
                   onClick={onMarkWatched}
@@ -133,6 +142,17 @@ export function MovieCard({ movie, onMarkWatched, onRemove, onViewDetails, featu
             
             {/* Action buttons at bottom */}
             <div className="flex gap-1 flex-wrap mt-2">
+              {movie.status === 'unwatched' && onMarkWatching && movie.content_type === 'tv' && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMarkWatching();
+                  }}
+                  className="flex-1 px-2 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded transition-colors"
+                >
+                  Start
+                </button>
+              )}
               {movie.status === 'unwatched' && onMarkWatched && (
                 <button
                   onClick={(e) => {

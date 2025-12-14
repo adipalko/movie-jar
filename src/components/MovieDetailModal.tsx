@@ -6,6 +6,7 @@ interface MovieDetailModalProps {
   movie: MovieWithUser;
   onClose: () => void;
   onMarkWatched?: () => void;
+  onMarkWatching?: () => void;
   onRemove?: () => void;
 }
 
@@ -52,7 +53,7 @@ function TrailerModal({ trailerUrl, onClose }: { trailerUrl: string; onClose: ()
   );
 }
 
-export function MovieDetailModal({ movie, onClose, onMarkWatched, onRemove }: MovieDetailModalProps) {
+export function MovieDetailModal({ movie, onClose, onMarkWatched, onMarkWatching, onRemove }: MovieDetailModalProps) {
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const [loadingTrailer, setLoadingTrailer] = useState(false);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
@@ -61,7 +62,7 @@ export function MovieDetailModal({ movie, onClose, onMarkWatched, onRemove }: Mo
     // Fetch trailer URL if we have a TMDB ID
     if (movie.api_source === 'tmdb' && movie.api_id) {
       setLoadingTrailer(true);
-      getMovieTrailerUrl(movie.api_id)
+      getMovieTrailerUrl(movie.api_id, movie.content_type || 'movie')
         .then(url => {
           setTrailerUrl(url);
         })
@@ -72,7 +73,7 @@ export function MovieDetailModal({ movie, onClose, onMarkWatched, onRemove }: Mo
           setLoadingTrailer(false);
         });
     }
-  }, [movie.api_source, movie.api_id]);
+  }, [movie.api_source, movie.api_id, movie.content_type]);
   return (
     <div
       className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
@@ -173,6 +174,17 @@ export function MovieDetailModal({ movie, onClose, onMarkWatched, onRemove }: Mo
 
             {/* Actions */}
             <div className="flex gap-3 flex-wrap">
+              {movie.status === 'unwatched' && onMarkWatching && movie.content_type === 'tv' && (
+                <button
+                  onClick={() => {
+                    onMarkWatching();
+                    onClose();
+                  }}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  Start Watching
+                </button>
+              )}
               {movie.status === 'unwatched' && onMarkWatched && (
                 <button
                   onClick={() => {
@@ -187,7 +199,7 @@ export function MovieDetailModal({ movie, onClose, onMarkWatched, onRemove }: Mo
               {onRemove && (
                 <button
                   onClick={() => {
-                    if (confirm('Are you sure you want to remove this movie from the list?')) {
+                    if (confirm('Are you sure you want to remove this from the list?')) {
                       onRemove();
                       onClose();
                     }
