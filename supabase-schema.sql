@@ -98,6 +98,12 @@ CREATE POLICY "Users can create households"
   ON households FOR INSERT
   WITH CHECK (auth.uid() = created_by);
 
+DROP POLICY IF EXISTS "Users can update their households" ON households;
+CREATE POLICY "Users can update their households"
+  ON households FOR UPDATE
+  USING (created_by = auth.uid())
+  WITH CHECK (created_by = auth.uid());
+
 -- RLS Policies for household_members
 -- ULTRA SIMPLE: Use EXISTS with direct household check (avoids recursion)
 

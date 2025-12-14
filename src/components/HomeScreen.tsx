@@ -9,7 +9,7 @@ import { HouseholdSettings } from './HouseholdSettings';
 import { analytics } from '../lib/analytics';
 import type { MovieWithUser } from '../types';
 
-type TVTab = 'unwatched' | 'watching' | 'watched';
+type ContentTab = 'unwatched' | 'watching' | 'watched';
 
 export function HomeScreen() {
   const { activeHousehold, setActiveHousehold, households } = useHousehold();
@@ -18,7 +18,7 @@ export function HomeScreen() {
   const [unwatchedMovies, setUnwatchedMovies] = useState<MovieWithUser[]>([]);
   const [watchingMovies, setWatchingMovies] = useState<MovieWithUser[]>([]);
   const [watchedMovies, setWatchedMovies] = useState<MovieWithUser[]>([]);
-  const [activeTab, setActiveTab] = useState<TVTab>('unwatched');
+  const [activeTab, setActiveTab] = useState<ContentTab>('unwatched');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState<MovieWithUser | null>(null);
@@ -29,9 +29,7 @@ export function HomeScreen() {
     if (activeHousehold) {
       loadMovies();
       // Reset to 'unwatched' tab when switching content types
-      if (contentType === 'tv') {
-        setActiveTab('unwatched');
-      }
+      setActiveTab('unwatched');
     }
   }, [activeHousehold, contentType]);
 
@@ -165,7 +163,7 @@ export function HomeScreen() {
   }
 
   return (
-    <div className="min-h-screen px-4 py-6 pb-20">
+    <div className="min-h-screen px-4 py-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-4 sm:mb-6">
@@ -317,23 +315,23 @@ export function HomeScreen() {
 
         {/* Movies/TV Shows List */}
         <div className="mb-6">
-          {/* Tabs for TV Shows */}
-          {contentType === 'tv' && (
-            <div className="mb-4">
-              <div className="flex gap-2 border-b border-slate-700">
-                <button
-                  onClick={() => {
-                    setActiveTab('unwatched');
-                    analytics.trackTabSwitch('unwatched');
-                  }}
-                  className={`px-4 py-2 font-medium transition-colors ${
-                    activeTab === 'unwatched'
-                      ? 'text-blue-400 border-b-2 border-blue-400'
-                      : 'text-slate-400 hover:text-slate-300'
-                  }`}
-                >
-                  In Jar ({unwatchedMovies.length})
-                </button>
+          {/* Tabs */}
+          <div className="mb-4">
+            <div className="flex gap-2 border-b border-slate-700">
+              <button
+                onClick={() => {
+                  setActiveTab('unwatched');
+                  analytics.trackTabSwitch('unwatched');
+                }}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  activeTab === 'unwatched'
+                    ? 'text-blue-400 border-b-2 border-blue-400'
+                    : 'text-slate-400 hover:text-slate-300'
+                }`}
+              >
+                In Jar ({unwatchedMovies.length})
+              </button>
+              {contentType === 'tv' && (
                 <button
                   onClick={() => {
                     setActiveTab('watching');
@@ -347,27 +345,22 @@ export function HomeScreen() {
                 >
                   Watching Now ({watchingMovies.length})
                 </button>
-                <button
-                  onClick={() => {
-                    setActiveTab('watched');
-                    analytics.trackTabSwitch('watched');
-                  }}
-                  className={`px-4 py-2 font-medium transition-colors ${
-                    activeTab === 'watched'
-                      ? 'text-green-400 border-b-2 border-green-400'
-                      : 'text-slate-400 hover:text-slate-300'
-                  }`}
-                >
-                  Watched ({watchedMovies.length})
-                </button>
-              </div>
+              )}
+              <button
+                onClick={() => {
+                  setActiveTab('watched');
+                  analytics.trackTabSwitch('watched');
+                }}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  activeTab === 'watched'
+                    ? 'text-green-400 border-b-2 border-green-400'
+                    : 'text-slate-400 hover:text-slate-300'
+                }`}
+              >
+                Watched ({watchedMovies.length})
+              </button>
             </div>
-          )}
-          {contentType === 'movie' && (
-            <h2 className="text-xl font-semibold text-white mb-4">
-              Unwatched Movies ({unwatchedMovies.length})
-            </h2>
-          )}
+          </div>
 
           {loading ? (
             <div className="text-slate-400 text-center py-8">Loading...</div>
@@ -375,20 +368,19 @@ export function HomeScreen() {
             let currentMovies: MovieWithUser[] = [];
             let emptyMessage = '';
             
-            if (contentType === 'tv') {
-              if (activeTab === 'unwatched') {
-                currentMovies = unwatchedMovies;
-                emptyMessage = 'No TV shows in jar. Add some to get started!';
-              } else if (activeTab === 'watching') {
-                currentMovies = watchingMovies;
-                emptyMessage = 'No TV shows being watched right now.';
-              } else {
-                currentMovies = watchedMovies;
-                emptyMessage = 'No watched TV shows yet.';
-              }
-            } else {
+            if (activeTab === 'unwatched') {
               currentMovies = unwatchedMovies;
-              emptyMessage = 'No unwatched movies. Add some to get started!';
+              emptyMessage = contentType === 'movie' 
+                ? 'No movies in jar. Add some to get started!'
+                : 'No TV shows in jar. Add some to get started!';
+            } else if (activeTab === 'watching') {
+              currentMovies = watchingMovies;
+              emptyMessage = 'No TV shows being watched right now.';
+            } else {
+              currentMovies = watchedMovies;
+              emptyMessage = contentType === 'movie'
+                ? 'No watched movies yet.'
+                : 'No watched TV shows yet.';
             }
 
             return currentMovies.length === 0 ? (

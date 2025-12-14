@@ -9,8 +9,12 @@ interface HouseholdSettingsProps {
   onClose: () => void;
 }
 
+interface HouseholdSettingsProps {
+  onClose: () => void;
+}
+
 export function HouseholdSettings({ onClose }: HouseholdSettingsProps) {
-  const { activeHousehold } = useHousehold();
+  const { activeHousehold, refreshHouseholds, setActiveHousehold } = useHousehold();
   const { user } = useAuth();
   const [members, setMembers] = useState<(HouseholdMember & { app_users: AppUser })[]>([]);
   const [inviteEmail, setInviteEmail] = useState('');
@@ -84,10 +88,15 @@ export function HouseholdSettings({ onClose }: HouseholdSettingsProps) {
     try {
       await updateHouseholdName(activeHousehold.id, householdName.trim());
       setEditingName(false);
-      // Refresh household context would be ideal, but for now this works
-      window.location.reload();
+      // Refresh households to get updated name
+      await refreshHouseholds();
+      // Update active household with new name immediately
+      if (activeHousehold) {
+        setActiveHousehold({ ...activeHousehold, name: householdName.trim() });
+      }
     } catch (error: any) {
       alert(error.message || 'Failed to update household name');
+      setHouseholdName(activeHousehold.name); // Reset on error
     } finally {
       setSavingName(false);
     }
