@@ -169,22 +169,22 @@ export function HomeScreen() {
     <div className="min-h-screen px-4 py-6 pb-20">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 gap-4">
-          <div className="flex-shrink-0 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 whitespace-nowrap">
+        <div className="flex items-start justify-between mb-6 gap-2 sm:gap-4">
+          <div className="flex-shrink-0 min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 whitespace-nowrap">
               {contentType === 'movie' ? '🎬 Movie Jar' : '📺 TV Jar'}
             </h1>
-            <p className="text-slate-400 truncate">{activeHousehold.name}</p>
+            <p className="text-slate-400 truncate text-sm sm:text-base">{activeHousehold.name}</p>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             {/* Toggle Switch */}
-            <div className="flex items-center bg-slate-700 rounded-lg p-1">
+            <div className="flex items-center bg-slate-700 rounded-lg p-0.5 sm:p-1">
               <button
                 onClick={() => {
                   setContentType('movie');
                   analytics.trackContentTypeSwitch('movie');
                 }}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${
                   contentType === 'movie'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-slate-300 hover:text-white'
@@ -197,7 +197,7 @@ export function HomeScreen() {
                   setContentType('tv');
                   analytics.trackContentTypeSwitch('tv');
                 }}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${
                   contentType === 'tv'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-slate-300 hover:text-white'
@@ -248,24 +248,24 @@ export function HomeScreen() {
         </div>
 
         {/* Stats */}
-        <div className={`grid gap-4 mb-6 ${contentType === 'tv' ? 'grid-cols-4' : 'grid-cols-3'}`}>
-          <div className="bg-slate-800 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-white">{stats.total}</div>
-            <div className="text-sm text-slate-400">Total {contentType === 'movie' ? 'Movies' : 'TV Shows'}</div>
+        <div className={`grid gap-2 sm:gap-4 mb-6 ${contentType === 'tv' ? 'grid-cols-4' : 'grid-cols-3'}`}>
+          <div className="bg-slate-800 rounded-lg p-3 sm:p-4 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-white">{stats.total}</div>
+            <div className="text-xs sm:text-sm text-slate-400 leading-tight">Total {contentType === 'movie' ? 'Movies' : 'TV Shows'}</div>
           </div>
-          <div className="bg-slate-800 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-blue-400">{stats.unwatched}</div>
-            <div className="text-sm text-slate-400">In Jar</div>
+          <div className="bg-slate-800 rounded-lg p-3 sm:p-4 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-blue-400">{stats.unwatched}</div>
+            <div className="text-xs sm:text-sm text-slate-400 leading-tight">In Jar</div>
           </div>
           {contentType === 'tv' && (
-            <div className="bg-slate-800 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-purple-400">{stats.watching}</div>
-              <div className="text-sm text-slate-400">Watching</div>
+            <div className="bg-slate-800 rounded-lg p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold text-purple-400">{stats.watching}</div>
+              <div className="text-xs sm:text-sm text-slate-400 leading-tight">Watching</div>
             </div>
           )}
-          <div className="bg-slate-800 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-green-400">{stats.watched}</div>
-            <div className="text-sm text-slate-400">Watched</div>
+          <div className="bg-slate-800 rounded-lg p-3 sm:p-4 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-green-400">{stats.watched}</div>
+            <div className="text-xs sm:text-sm text-slate-400 leading-tight">Watched</div>
           </div>
         </div>
 
