@@ -63,35 +63,35 @@ export function MovieCard({ movie, onMarkWatched, onMarkWatching, onRemove, onVi
               {movie.status === 'unwatched' && onMarkWatching && movie.content_type === 'tv' && (
                 <button
                   onClick={onMarkWatching}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors flex items-center gap-2.5"
                 >
-                  <svg className="w-5 h-5 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg className="w-5 h-5 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="text-slate-300 whitespace-nowrap">Start</span>
+                  <span className="text-slate-300 font-medium">Start</span>
                 </button>
               )}
               {movie.status === 'unwatched' && onMarkWatched && (
                 <button
                   onClick={onMarkWatched}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors flex items-center gap-2.5"
                 >
-                  <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-slate-300 whitespace-nowrap">Watched</span>
+                  <span className="text-slate-300 font-medium">Watched</span>
                 </button>
               )}
               {onRemove && (
                 <button
                   onClick={onRemove}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors flex items-center gap-2.5"
                 >
-                  <svg className="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  <svg className="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                  <span className="text-slate-300 whitespace-nowrap">Remove</span>
+                  <span className="text-slate-300 font-medium">Remove</span>
                 </button>
               )}
             </div>
@@ -158,13 +158,13 @@ export function MovieCard({ movie, onMarkWatched, onMarkWatching, onRemove, onVi
                     e.stopPropagation();
                     onMarkWatching();
                   }}
-                  className="flex-1 px-2 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-colors flex items-center justify-center gap-1.5"
+                  className="flex-1 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-colors flex items-center justify-center gap-2"
                 >
-                  <svg className="w-4 h-4 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg className="w-4 h-4 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="text-xs text-slate-300 whitespace-nowrap">Start</span>
+                  <span className="text-xs text-slate-300 font-medium">Start</span>
                 </button>
               )}
               {movie.status === 'unwatched' && onMarkWatched && (
@@ -173,12 +173,12 @@ export function MovieCard({ movie, onMarkWatched, onMarkWatching, onRemove, onVi
                     e.stopPropagation();
                     onMarkWatched();
                   }}
-                  className="flex-1 px-2 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-colors flex items-center justify-center gap-1.5"
+                  className="flex-1 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-colors flex items-center justify-center gap-2"
                 >
-                  <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-xs text-slate-300 whitespace-nowrap">Watched</span>
+                  <span className="text-xs text-slate-300 font-medium">Watched</span>
                 </button>
               )}
               {onRemove && (
@@ -189,12 +189,12 @@ export function MovieCard({ movie, onMarkWatched, onMarkWatching, onRemove, onVi
                       onRemove();
                     }
                   }}
-                  className="flex-1 px-2 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-colors flex items-center justify-center gap-1.5"
+                  className="flex-1 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded transition-colors flex items-center justify-center gap-2"
                 >
-                  <svg className="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  <svg className="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                  <span className="text-xs text-slate-300 whitespace-nowrap">Remove</span>
+                  <span className="text-xs text-slate-300 font-medium">Remove</span>
                 </button>
               )}
             </div>
