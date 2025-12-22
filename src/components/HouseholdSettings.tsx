@@ -3,6 +3,7 @@ import { useHousehold } from '../contexts/HouseholdContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getHouseholdMembers, addHouseholdMemberByEmail, updateHouseholdName, removeHouseholdMember } from '../lib/households';
 import { signOut } from '../lib/auth';
+import { updateVibesForHousehold } from '../lib/updateVibes';
 import type { HouseholdMember, AppUser } from '../types';
 
 interface HouseholdSettingsProps {
@@ -25,6 +26,8 @@ export function HouseholdSettings({ onClose }: HouseholdSettingsProps) {
   const [savingName, setSavingName] = useState(false);
   const [loading, setLoading] = useState(false);
   const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+  const [updatingVibes, setUpdatingVibes] = useState(false);
+  const [vibeUpdateMessage, setVibeUpdateMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     if (activeHousehold) {
@@ -302,6 +305,77 @@ export function HouseholdSettings({ onClose }: HouseholdSettingsProps) {
             ))}
           </div>
         )}
+
+        {/* Update Vibes Section */}
+        <div className="border-t border-slate-700 pt-6 mt-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Movie Data</h3>
+          <p className="text-sm text-slate-400 mb-4">
+            Update vibe tags for existing movies and TV shows from TMDB keywords.
+          </p>
+          {vibeUpdateMessage && (
+            <div className={`mb-4 p-3 rounded-lg text-sm ${
+              vibeUpdateMessage.type === 'success' 
+                ? 'bg-green-600/20 text-green-300' 
+                : 'bg-red-600/20 text-red-300'
+            }`}>
+              {vibeUpdateMessage.text}
+            </div>
+          )}
+          <button
+            onClick={async () => {
+              if (!activeHousehold) return;
+              
+              setUpdatingVibes(true);
+              setVibeUpdateMessage(null);
+              
+              try {
+                const result = await updateVibesForHousehold(activeHousehold.id);
+                if (result.updated > 0 || result.errors === 0) {
+                  setVibeUpdateMessage({
+                    type: 'success',
+                    text: `Successfully updated ${result.updated} ${result.updated === 1 ? 'movie' : 'movies'} with vibe tags.${result.errors > 0 ? ` ${result.errors} errors occurred.` : ''}`
+                  });
+                } else if (result.updated === 0) {
+                  setVibeUpdateMessage({
+                    type: 'success',
+                    text: 'All movies already have vibe tags, or no movies with TMDB data found.'
+                  });
+                } else {
+                  setVibeUpdateMessage({
+                    type: 'error',
+                    text: `Updated ${result.updated} movies, but ${result.errors} errors occurred.`
+                  });
+                }
+              } catch (error: any) {
+                setVibeUpdateMessage({
+                  type: 'error',
+                  text: error.message || 'Failed to update vibe tags. Please try again.'
+                });
+              } finally {
+                setUpdatingVibes(false);
+              }
+            }}
+            disabled={updatingVibes || !activeHousehold}
+            className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            {updatingVibes ? (
+              <>
+                <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Updating...
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Update Vibe Tags
+              </>
+            )}
+          </button>
+        </div>
 
         {/* Sign Out Section */}
         <div className="border-t border-slate-700 pt-6 mt-6">

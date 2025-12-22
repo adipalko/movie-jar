@@ -6,7 +6,7 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ paddingTop: 'max(env(safe-area-inset-top), 8px)' }}>
       <div className="flex-1">
         {children}
       </div>

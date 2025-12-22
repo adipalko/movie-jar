@@ -163,24 +163,25 @@ export function HomeScreen() {
   }
 
   return (
-    <div className="min-h-screen px-4 py-6">
+    <div className="min-h-screen px-4 py-3 sm:py-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-4 sm:mb-6">
           {/* Top row: Title, toggle, and settings */}
           <div className="flex items-center justify-between mb-2 gap-2">
-            <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-white whitespace-nowrap">
-              {contentType === 'movie' ? '🎬 Movie Jar' : '📺 TV Jar'}
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-white whitespace-nowrap">
+              <span className="text-2xl sm:text-4xl md:text-5xl mr-1">{contentType === 'movie' ? '🎬' : '📺'}</span>
+              {contentType === 'movie' ? 'Movie Jar' : 'TV Jar'}
             </h1>
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
               {/* Toggle Switch */}
-              <div className="flex items-center bg-slate-700 rounded-lg p-0.5 sm:p-1">
+              <div className="flex items-center bg-slate-700 rounded-lg p-1 sm:p-1.5">
                 <button
                   onClick={() => {
                     setContentType('movie');
                     analytics.trackContentTypeSwitch('movie');
                   }}
-                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded text-sm sm:text-base font-medium transition-colors ${
                     contentType === 'movie'
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-slate-300 hover:text-white'
@@ -193,7 +194,7 @@ export function HomeScreen() {
                     setContentType('tv');
                     analytics.trackContentTypeSwitch('tv');
                   }}
-                  className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded text-xs sm:text-sm font-medium transition-colors ${
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded text-sm sm:text-base font-medium transition-colors ${
                     contentType === 'tv'
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-slate-300 hover:text-white'
@@ -204,11 +205,11 @@ export function HomeScreen() {
               </div>
               <button
                 onClick={() => setShowSettings(true)}
-                className="p-1.5 sm:p-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                className="p-2 sm:p-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
                 title="Household Settings"
                 aria-label="Household Settings"
               >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>

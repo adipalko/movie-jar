@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS movies (
   runtime_minutes INTEGER,
   genres TEXT,
   plot TEXT,
+  vibe TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

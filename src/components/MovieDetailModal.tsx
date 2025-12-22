@@ -129,6 +129,15 @@ export function MovieDetailModal({ movie, onClose, onMarkWatched, onMarkWatching
               </div>
             )}
 
+            {/* Vibe Tag */}
+            {movie.vibe && (
+              <div className="mb-4">
+                <span className="inline-block px-3 py-1.5 bg-purple-600/30 text-purple-300 text-sm font-medium rounded">
+                  {movie.vibe}
+                </span>
+              </div>
+            )}
+
             {/* Plot/Summary */}
             {movie.plot && (
               <div className="mb-4">

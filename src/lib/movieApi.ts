@@ -95,6 +95,16 @@ export interface TMDBVideosResponse {
   results: TMDBVideo[];
 }
 
+export interface TMDBKeyword {
+  id: number;
+  name: string;
+}
+
+export interface TMDBKeywordsResponse {
+  id: number;
+  keywords: TMDBKeyword[];
+}
+
 export interface TMDBMovieSearchResult {
   id: number;
   title: string;
@@ -206,6 +216,66 @@ export async function searchMovies(query: string): Promise<TMDBMovieSearchResult
 }
 
 /**
+ * Get keywords for a movie by TMDB ID
+ */
+export async function getMovieKeywords(tmdbId: string): Promise<string | null> {
+  if (!TMDB_API_KEY || TMDB_API_KEY === 'your_tmdb_api_key_here') {
+    return null;
+  }
+
+  try {
+    const url = `${TMDB_BASE_URL}/movie/${tmdbId}/keywords?api_key=${TMDB_API_KEY}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      return null;
+    }
+
+    const data: TMDBKeywordsResponse = await response.json();
+    
+    // Return the first keyword as the "vibe", or null if no keywords
+    if (data.keywords && data.keywords.length > 0) {
+      return data.keywords[0].name;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching movie keywords from TMDB:', error);
+    return null;
+  }
+}
+
+/**
+ * Get keywords for a TV show by TMDB ID
+ */
+export async function getTVShowKeywords(tmdbId: string): Promise<string | null> {
+  if (!TMDB_API_KEY || TMDB_API_KEY === 'your_tmdb_api_key_here') {
+    return null;
+  }
+
+  try {
+    const url = `${TMDB_BASE_URL}/tv/${tmdbId}/keywords?api_key=${TMDB_API_KEY}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      return null;
+    }
+
+    const data: TMDBKeywordsResponse = await response.json();
+    
+    // Return the first keyword as the "vibe", or null if no keywords
+    if (data.keywords && data.keywords.length > 0) {
+      return data.keywords[0].name;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching TV show keywords from TMDB:', error);
+    return null;
+  }
+}
+
+/**
  * Get detailed TV show information by TMDB ID
  */
 export async function getTVShowByTmdbId(tmdbId: string): Promise<Partial<Movie> | null> {
@@ -232,7 +302,9 @@ export async function getTVShowByTmdbId(tmdbId: string): Promise<Partial<Movie> 
       return null;
     }
 
-    return parseTMDBTVResponse(data);
+    // Fetch keywords for vibe
+    const vibe = await getTVShowKeywords(tmdbId);
+    return parseTMDBTVResponse(data, vibe);
   } catch (error) {
     console.error('Error fetching TV show from TMDB:', error);
     return null;
@@ -266,7 +338,9 @@ export async function getMovieByTmdbId(tmdbId: string): Promise<Partial<Movie> |
       return null;
     }
 
-    return parseTMDBResponse(data);
+    // Fetch keywords for vibe
+    const vibe = await getMovieKeywords(tmdbId);
+    return parseTMDBResponse(data, vibe);
   } catch (error) {
     console.error('Error fetching movie from TMDB:', error);
     return null;
@@ -276,7 +350,7 @@ export async function getMovieByTmdbId(tmdbId: string): Promise<Partial<Movie> |
 /**
  * Parse TMDB TV response into Movie format
  */
-function parseTMDBTVResponse(data: TMDBTVDetails): Partial<Movie> {
+function parseTMDBTVResponse(data: TMDBTVDetails, vibe: string | null = null): Partial<Movie> {
   const year = data.first_air_date && data.first_air_date !== ''
     ? parseInt(data.first_air_date.split('-')[0], 10)
     : null;
@@ -302,6 +376,7 @@ function parseTMDBTVResponse(data: TMDBTVDetails): Partial<Movie> {
     runtime_minutes: runtime,
     genres,
     plot: data.overview && data.overview !== '' ? data.overview : null,
+    vibe,
     api_source: 'tmdb',
     api_id: data.id.toString(),
     content_type: 'tv',
@@ -311,7 +386,7 @@ function parseTMDBTVResponse(data: TMDBTVDetails): Partial<Movie> {
 /**
  * Parse TMDB response into Movie format
  */
-function parseTMDBResponse(data: TMDBMovieDetails): Partial<Movie> {
+function parseTMDBResponse(data: TMDBMovieDetails, vibe: string | null = null): Partial<Movie> {
   const year = data.release_date && data.release_date !== ''
     ? parseInt(data.release_date.split('-')[0], 10)
     : null;
@@ -332,6 +407,7 @@ function parseTMDBResponse(data: TMDBMovieDetails): Partial<Movie> {
     runtime_minutes: data.runtime || null,
     genres,
     plot: data.overview && data.overview !== '' ? data.overview : null,
+    vibe,
     api_source: 'tmdb',
     api_id: data.id.toString(),
     content_type: 'movie',

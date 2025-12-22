@@ -35,3 +35,10 @@ dist-ssr
 # Build outputs
 dist/
 build/
+
+# Capacitor
+ios/App/Pods/
+ios/App/Podfile.lock
+ios/App/App/public/
+*.xcworkspace
+!ios/App/App.xcworkspace

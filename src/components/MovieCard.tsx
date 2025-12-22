@@ -45,6 +45,14 @@ export function MovieCard({ movie, onMarkWatched, onMarkWatching, onRemove, onVi
               </div>
             )}
 
+            {movie.vibe && (
+              <div className="mb-3">
+                <span className="inline-block px-2 py-1 bg-purple-600/30 text-purple-300 text-xs font-medium rounded">
+                  {movie.vibe}
+                </span>
+              </div>
+            )}
+
             {movie.plot && (
               <p className="text-slate-300 mb-3 text-base">{movie.plot}</p>
             )}
@@ -143,6 +151,13 @@ export function MovieCard({ movie, onMarkWatched, onMarkWatching, onRemove, onVi
                 </div>
                 {movie.genres && (
                   <p className="text-xs text-slate-400 line-clamp-1">{movie.genres}</p>
+                )}
+                {movie.vibe && (
+                  <div className="mt-2">
+                    <span className="inline-block px-2 py-0.5 bg-purple-600/30 text-purple-300 text-xs font-medium rounded">
+                      {movie.vibe}
+                    </span>
+                  </div>
                 )}
               </div>
             </div>

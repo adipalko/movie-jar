@@ -273,6 +273,74 @@ npm run build
 
 The built files will be in the `dist/` directory.
 
+## iOS App Development
+
+This app is configured to run as an iOS app using Capacitor. The web app is wrapped in a native iOS container, allowing it to be distributed through the App Store.
+
+### Prerequisites for iOS Development
+
+- macOS with Xcode installed
+- Apple Developer account (for device testing and App Store distribution)
+- CocoaPods (usually installed automatically with Xcode)
+
+### Building and Running on iOS
+
+1. **Build the web app and sync to iOS:**
+   ```bash
+   npm run cap:sync
+   ```
+   This builds the web app and copies it to the iOS project.
+
+2. **Open in Xcode:**
+   ```bash
+   npm run cap:open
+   ```
+   Or use the combined command:
+   ```bash
+   npm run cap:ios
+   ```
+
+3. **Run in Simulator or Device:**
+   - In Xcode, select a simulator or connected device
+   - Click the Run button (▶️) or press `Cmd+R`
+   - The app will build and launch
+
+### Development Workflow
+
+When making changes to the web app:
+
+1. Make your changes to React/TypeScript code
+2. Run `npm run cap:sync` to rebuild and sync changes to iOS
+3. The changes will be reflected when you run the app again in Xcode
+
+**Note:** You don't need to reopen Xcode for every change - just sync and rerun.
+
+### Available Scripts
+
+- `npm run cap:sync` - Build web app and sync to iOS
+- `npm run cap:open` - Open iOS project in Xcode
+- `npm run cap:ios` - Build, sync, and open in Xcode (all-in-one)
+
+### iOS Configuration
+
+The iOS app configuration is in `capacitor.config.ts`:
+- **App ID**: `com.moviejar.app`
+- **App Name**: Movie Jar
+- **Web Directory**: `dist`
+
+To change the app ID or name, edit `capacitor.config.ts` and run `npm run cap:sync`.
+
+### App Store Distribution
+
+To distribute the app through the App Store:
+
+1. In Xcode, select your target and go to "Signing & Capabilities"
+2. Select your development team
+3. Build for Archive: Product → Archive
+4. Follow the App Store Connect workflow to submit
+
+For more details, see the [Capacitor iOS documentation](https://capacitorjs.com/docs/ios).
+
 ## Notes
 
 - **API Key Security**: In this demo, the OMDb API key is used from the frontend. In production, you should proxy API calls through a backend server to keep API keys secure.

@@ -71,6 +71,7 @@ export async function addMovie(
     runtime_minutes: finalMetadata?.runtime_minutes || null,
     genres: finalMetadata?.genres || null,
     plot: finalMetadata?.plot || null,
+    vibe: finalMetadata?.vibe || null,
   };
 
   // Insert movie

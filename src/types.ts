@@ -40,6 +40,7 @@ export interface Movie {
   runtime_minutes: number | null;
   genres: string | null; // Comma-separated
   plot: string | null;
+  vibe: string | null; // Vibe tag from TMDB keywords
   created_at: string;
 }
 
